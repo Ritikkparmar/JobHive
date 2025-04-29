@@ -9,4 +9,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ['react-resizable']
+  },
+  build: {
+    commonjsOptions: {
+      include: [/react-resizable/, /node_modules/]
+    }
+  }
 })

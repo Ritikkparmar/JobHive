@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { X, Bot } from 'lucide-react';
 import { ResizableBox } from 'react-resizable';
-import 'react-resizable/css/styles.css'; // Import resizable styles
+// Import the CSS at the top level
+import 'react-resizable/css/styles.css';
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,14 +22,7 @@ export default function ChatbotWidget() {
       {isOpen && (
         <div className="fixed inset-0 z-[999] bg-black bg-opacity-20">
           <div className="absolute top-16 right-8 z-[1000] h-[calc(100vh-120px)]">
-            <ResizableBox
-              width={400}
-              height={500}
-              minConstraints={[320, 400]}
-              maxConstraints={[500, 600]}
-              resizeHandles={['se']}
-              className="rounded-xl shadow-2xl bg-white flex flex-col overflow-hidden"
-            >
+            <div className="rounded-xl shadow-2xl bg-white flex flex-col overflow-hidden w-[400px] h-[500px]">
               {/* Header */}
               <div className="flex justify-between items-center px-4 py-3 bg-white border-b sticky top-0 z-10">
                 <p className="text-base font-semibold text-gray-800">Chat with us 💬</p>
@@ -48,7 +42,7 @@ export default function ChatbotWidget() {
                   title="Vercel AI Chatbot"
                 />
               </div>
-            </ResizableBox>
+            </div>
           </div>
         </div>
       )}
