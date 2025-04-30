@@ -16,18 +16,24 @@ const app = express();
 // --- Allowlist for CORS ---
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://job-hive-jobportal.vercel.app'
+  'https://job-hive-jobportal.vercel.app',
 ];
+
+function corsOrigin(origin, callback) {
+  if (
+    !origin ||
+    allowedOrigins.includes(origin) ||
+    /\.vercel\.app$/.test(origin)
+  ) {
+    callback(null, true);
+  } else {
+    callback(new Error('Not allowed by CORS'));
+  }
+}
 
 // --- CORS middleware ---
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: corsOrigin,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
