@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./utils/db.js";
+import corsMiddleware from "./middlewares/cors.js";
 
 import userRoute from "./routes/user.route.js";
 import companyRoute from "./routes/company.route.js";
@@ -13,29 +14,13 @@ dotenv.config();
 
 const app = express();
 
-// --- Allowlist for CORS ---
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://job-hive-jobportal.vercel.app',
-  'https://job-portal-jobportal-yt.vercel.app',
-  'https://job-portal-jobportal-yt-git-main-ritik-parmars-projects.vercel.app'
-];
-
-function corsOrigin(origin, callback) {
-  if (
-    !origin ||
-    allowedOrigins.includes(origin) ||
-    /\.vercel\.app$/.test(origin)
-  ) {
-    callback(null, true);
-  } else {
-    callback(new Error('Not allowed by CORS'));
-  }
-}
+// Apply custom CORS middleware first (handles preflight)
+app.use(corsMiddleware);
 
 // --- CORS middleware ---
+// Keep this as fallback but our custom middleware will handle most cases
 app.use(cors({
-  origin: corsOrigin,
+  origin: 'https://job-hive-jobportal.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
