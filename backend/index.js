@@ -17,6 +17,8 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'https://job-hive-jobportal.vercel.app',
+  'https://job-portal-jobportal-yt.vercel.app',
+  'https://job-portal-jobportal-yt-git-main-ritik-parmars-projects.vercel.app'
 ];
 
 function corsOrigin(origin, callback) {
