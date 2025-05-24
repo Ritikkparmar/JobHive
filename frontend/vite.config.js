@@ -11,22 +11,22 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/user': {
+      '/api/v1/user': {
         target: 'https://job-hive-backend.vercel.app',
         changeOrigin: true,
         secure: false,
       },
-      '/job': {
+      '/api/v1/job': {
         target: 'https://job-hive-backend.vercel.app',
         changeOrigin: true,
         secure: false,
       },
-      '/application': {
+      '/api/v1/application': {
         target: 'https://job-hive-backend.vercel.app',
         changeOrigin: true,
         secure: false,
       },
-      '/company': {
+      '/api/v1/company': {
         target: 'https://job-hive-backend.vercel.app',
         changeOrigin: true,
         secure: false,
