@@ -30,20 +30,39 @@ const Login = () => {
         e.preventDefault();
         try {
             dispatch(setLoading(true));
+            console.log('Attempting login with:', { email: input.email, role: input.role });
+            console.log('API URL:', USER_API_END_POINT);
+            
             const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
                 headers: {
                     "Content-Type": "application/json"
                 },
                 withCredentials: true,
+                timeout: 10000 // 10 second timeout
             });
+            
+            console.log('Login response:', res.data);
             if (res.data.success) {
                 dispatch(setUser(res.data.user));
                 navigate("/");
                 toast.success(res.data.message);
             }
         } catch (error) {
-            console.log(error);
-            toast.error(error.response.data.message);
+            console.error('Login error:', error);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                toast.error(error.response.data.message || 'Login failed');
+            } else if (error.request) {
+                // The request was made but no response was received
+                toast.error('Network error. Please check your connection.');
+            } else if (error.code === 'ECONNABORTED') {
+                // Request timeout
+                toast.error('Request timed out. Please try again.');
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                toast.error('An error occurred. Please try again.');
+            }
         } finally {
             dispatch(setLoading(false));
         }
