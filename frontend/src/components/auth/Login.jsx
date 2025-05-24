@@ -5,12 +5,12 @@ import { Input } from '../ui/input'
 import { RadioGroup } from '../ui/radio-group'
 import { Button } from '../ui/button'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
 import { USER_API_END_POINT } from '@/utils/constant'
 import { toast } from 'sonner'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLoading, setUser } from '@/redux/authSlice'
 import { Loader2 } from 'lucide-react'
+import axiosInstance from '@/config/api'
 
 const Login = () => {
     const [input, setInput] = useState({
@@ -18,7 +18,7 @@ const Login = () => {
         password: "",
         role: "",
     });
-    const { loading,user } = useSelector(store => store.auth);
+    const { loading, user } = useSelector(store => store.auth);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -33,12 +33,18 @@ const Login = () => {
             console.log('Attempting login with:', { email: input.email, role: input.role });
             console.log('API URL:', USER_API_END_POINT);
             
-            const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
+            // Validate input before sending
+            if (!input.email || !input.password || !input.role) {
+                toast.error('Please fill in all fields');
+                return;
+            }
+
+            const res = await axiosInstance.post(`${USER_API_END_POINT}/login`, input, {
+                timeout: 30000, // 30 second timeout
                 headers: {
-                    "Content-Type": "application/json"
+                    'Content-Type': 'application/json',
                 },
-                withCredentials: true,
-                timeout: 10000 // 10 second timeout
+                withCredentials: true
             });
             
             console.log('Login response:', res.data);
@@ -46,32 +52,27 @@ const Login = () => {
                 dispatch(setUser(res.data.user));
                 navigate("/");
                 toast.success(res.data.message);
+            } else {
+                toast.error(res.data.message || 'Login failed');
             }
         } catch (error) {
             console.error('Login error:', error);
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                toast.error(error.response.data.message || 'Login failed');
-            } else if (error.request) {
-                // The request was made but no response was received
-                toast.error('Network error. Please check your connection.');
-            } else if (error.code === 'ECONNABORTED') {
-                // Request timeout
-                toast.error('Request timed out. Please try again.');
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
             } else {
-                // Something happened in setting up the request that triggered an Error
-                toast.error('An error occurred. Please try again.');
+                toast.error(error.message || 'An error occurred during login');
             }
         } finally {
             dispatch(setLoading(false));
         }
     }
-    useEffect(()=>{
-        if(user){
+
+    useEffect(() => {
+        if (user) {
             navigate("/");
         }
-    },[])
+    }, [user, navigate]);
+
     return (
         <div>
             <Navbar />
@@ -86,6 +87,7 @@ const Login = () => {
                             name="email"
                             onChange={changeEventHandler}
                             placeholder="patel@gmail.com"
+                            required
                         />
                     </div>
 
@@ -96,7 +98,8 @@ const Login = () => {
                             value={input.password}
                             name="password"
                             onChange={changeEventHandler}
-                            placeholder="patel@gmail.com"
+                            placeholder="Enter your password"
+                            required
                         />
                     </div>
                     <div className='flex items-center justify-between'>
@@ -109,6 +112,7 @@ const Login = () => {
                                     checked={input.role === 'student'}
                                     onChange={changeEventHandler}
                                     className="cursor-pointer"
+                                    required
                                 />
                                 <Label htmlFor="r1">Student</Label>
                             </div>
@@ -120,13 +124,14 @@ const Login = () => {
                                     checked={input.role === 'recruiter'}
                                     onChange={changeEventHandler}
                                     className="cursor-pointer"
+                                    required
                                 />
                                 <Label htmlFor="r2">Recruiter</Label>
                             </div>
                         </RadioGroup>
                     </div>
                     {
-                        loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
+                        loading ? <Button className="w-full my-4" disabled> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
                     }
                     <span className='text-sm'>Don't have an account? <Link to="/signup" className='text-blue-600'>Signup</Link></span>
                 </form>
