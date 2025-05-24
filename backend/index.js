@@ -20,15 +20,28 @@ app.use(corsMiddleware);
 // --- CORS middleware ---
 // Keep this as fallback but our custom middleware will handle most cases
 app.use(cors({
-  origin: 'https://job-hive-jobportal.vercel.app',
+  origin: 'https://job-hive-jobportal-pvt27z6ur-ritik-parmars-projects.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Increase payload limit
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
+
+// Add timeout middleware
+app.use((req, res, next) => {
+  res.setTimeout(30000, () => {
+    console.error('Request timeout');
+    res.status(504).json({
+      success: false,
+      message: 'Request timeout'
+    });
+  });
+  next();
+});
 
 // Root route handler
 app.get("/", (req, res) => {
@@ -47,7 +60,7 @@ app.use("/api/v1/application", applicationRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).json({
     success: false,
     message: "Something went wrong!",
@@ -65,7 +78,12 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  connectDB();
-  console.log(`Server running on port ${PORT}`);
+// Connect to database before starting server
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error('Failed to connect to database:', err);
+  process.exit(1);
 });
